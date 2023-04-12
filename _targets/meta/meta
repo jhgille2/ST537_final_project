@@ -1,0 +1,9 @@
+name|type|data|command|depend|seed|path|time|size|bytes|format|repository|iteration|parent|children|seconds|warnings|error
+all_wine_data|stem|6bb633e6f4b64138|2abc443ff5e75391|16499400dfbc377e|1410430197||t19459.6589052244s|aa5589f20d7ea5c2|107112|rds|local|vector|||0.57||
+clean_data|function|3841c56a97c11bc9|||||||||||||||
+eda_summary_tables|stem|72ebc9f3cb3b3ec3|a8732997a4f56a5c|769f2b8ab7ce83e3|1314196162||t19459.674220366s|3bd8f66805fd112b|45|rds|local|vector|||0||
+long_variable_names|stem|29ed95770bed9f71|2277e95db3814ff8|6c27996c003b57ba|1784028067||t19459.6775688807s|06b7a5711ff3c1f6|189|rds|local|vector|||0.36||
+make_eda_summary_tables|function|ea84aa8cff280ea2|||||||||||||||
+red_wine_file|stem|3eabceb4af97ea7e|18b59658b1ef0bb0|c3b5fc02cdc369c1|-1474003730|C:/Users/jhgille2/Documents/R/projects/ST537_final_project/data/winequality-red.csv|t19459.6474783309s|bfeeab4d49981e30|84199|file|local|vector|||0.05||
+white_wine_file|stem|7b56c5eca72e3536|46c5c8a37bc2c2a1|c3b5fc02cdc369c1|-685756078|C:/Users/jhgille2/Documents/R/projects/ST537_final_project/data/winequality-white.csv|t19459.6475202142s|bf3a2c6da56e9f01|264426|file|local|vector|||0.02||
+writeup|stem|586642055c607992|dddbc91060d72f6a|4745aa592080ea1d|-1765915775|doc/writeup.pdf*doc/writeup.Rmd|t19459.6687423354s|8631df2c32fd2c7b|103156|file|local|vector|||3.9||

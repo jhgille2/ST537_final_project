@@ -1,0 +1,36 @@
+---
+title: "ST 537 Final Project"
+author: "Jay Gillenwater"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: pdf_document
+---
+\newpage
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+## target knits Rmds in their own session, so load libraries here.
+source(here::here("packages.R"))
+
+```
+
+```{r load-targets, include=FALSE}
+# tar_load(c(target_1, target_2, target_3))
+
+# # If your chunk output is shown in-line, then you'll need to wrap tar_load()
+# # like so:
+# 
+# withr::with_dir(here::here(), {
+#   tar_load(c(target_1, target_2, target_3))
+# })
+# 
+# # This is not needed when using tar_make() to render the document.
+```
+
+## Introduction
+The data I have chosen to analyze for this project is the [wine quality](https://archive.ics.uci.edu/ml/datasets/Wine+Quality) data from the [UCI Machine learning data repository](https://archive.ics.uci.edu/ml/index.php)
+
+## Methods
+
+
+
+</details>
