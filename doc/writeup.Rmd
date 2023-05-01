@@ -2,35 +2,70 @@
 title: "ST 537 Final Project"
 author: "Jay Gillenwater"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
-output: pdf_document
+output:  
+  pdf_document:
+    extra_dependencies: ["float"]
 ---
 \newpage
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(fig.pos = "H", out.extra = "")
 ## target knits Rmds in their own session, so load libraries here.
 source(here::here("packages.R"))
 
 ```
 
 ```{r load-targets, include=FALSE}
-# tar_load(c(target_1, target_2, target_3))
-
-# # If your chunk output is shown in-line, then you'll need to wrap tar_load()
-# # like so:
-# 
-# withr::with_dir(here::here(), {
-#   tar_load(c(target_1, target_2, target_3))
-# })
-# 
-# # This is not needed when using tar_make() to render the document.
+tar_load(c(wine_data, eda_summary_plots))
 ```
 
-## Introduction
-The data I have chosen to analyze for this project is the [wine quality](https://archive.ics.uci.edu/ml/datasets/Wine+Quality) data from the [UCI Machine learning data repository](https://archive.ics.uci.edu/ml/index.php)
+# Introduction
+The data I have chosen to analyze for this project is the [wine quality](https://archive.ics.uci.edu/ml/datasets/Wine+Quality) data from the [UCI Machine learning data repository](https://archive.ics.uci.edu/ml/index.php). The data consist of eleven variables which measure phyical properties of wine, and one response variable (quality) which is a value between 0 and 10 that is assigned by wine tasting professionals. There are two tables in the dataset, one for red wine and one for white wine. Both tables have the same set of variables. For this project, I will only use data from the white wine table. My goal for this project will be to build a predictive model to classify the wines based on their physical properties. I will build and compare multiple classification models using relevant model performance metrics and present my final predictive model based on those metrics.
 
-## Methods
+# Methods
+## Data description
+The [wine quality](https://archive.ics.uci.edu/ml/datasets/Wine+Quality) data from the UCI machine learning repository consists of two tables: One for red wine, and one for white wine. Each table has the same eleven measurement variables, and one response variable. The eleven measurement variables measure physical properties of the wine, and the quality response variable is a quality score assigned to a particular wine by a wine tasting professional. Quality is measured from 0 to 10 with 0 indicating a very poor quality, and 10 indicating a very good quality. This score represents the median of at least three taste scores for each wine. The first five rows of the data is given below in Table 1
+
+```{r red_wine_table, echo = FALSE}
+
+wine_head <- wine_data %>% 
+  head() 
+
+kable(wine_head, format = "latex", caption = "First five rows of the wine data set") %>% 
+  kable_styling(latex_options=c("hold_position", "scale_down"))
+```
+
+I'll start with some numeric summaries of the variables in the data (Table 2).
 
 
+```{r variable_summaries, echo = FALSE}
 
-</details>
+wine_summary <- psych::describe(wine_data)
+
+kable(wine_summary, caption = "Variable summary statistics for white wine data", digits = 3, format = "latex") %>% 
+  kable_styling(latex_options=c("hold_position", "scale_down"))
+
+```
+
+I can make a few general statements by looking at this data. First, we can see that all variables are complete as all have the same number of observations as I have rows in my data. The next summary statistic that jumps out are the large values for skewness and kurtosis for many of the variables. These large values suggest a departure from normality for these variables, and therefore a departure from multivariate normality for the data sets as a whole. We also can see that there is a good deal of variability in both the mean and standard deviations of the variables. This is made more obvious by looking at the distributions of the variables in the following pairs plot (Figure 1).
+
+```{r pairs_plot, echo = FALSE, message = FALSE, fig.cap = "White wine pairs plot", fig.height = 10, fig.width = 10}
+
+eda_summary_plots$pairs_plot
+
+```
+\newpage
+Finally, lets look at the distribution of the response variable, quality.  
+
+
+```{r responnse_bar, echo = FALSE, fig.cap = "Count of quality scores", fig.height = 3}
+eda_summary_plots$response_dist
+
+```
+
+We can see that there is a good deal of imbalance between the classes of the quality variable. Few wines have either extremely poor, or extremely good quality scores. 
+
+## Building a model
+### Data transformations
+I know from exploring my data that there are several skewed variables in my data. One way to resolve this skew is to transform the skewed variables to be approximately normal. A log transformation can be used, but I used the slightly more complicated Box-Cox transformation for my data

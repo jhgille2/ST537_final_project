@@ -17,7 +17,9 @@ pacman::p_load(dplyr,
                readr,
                janitor,
                purrr,
-               stringr)
+               stringr,
+               psych,
+               skimr)
 
 # Visualization
 pacman::p_load(ggplot2,
@@ -25,7 +27,8 @@ pacman::p_load(ggplot2,
                GGally)
 
 # Modeling
-pacman::p_load(tidymodels)
+pacman::p_load(tidymodels,
+               descrim)
 
 # writeup
 pacman::p_load(kableExtra,

@@ -9,11 +9,6 @@ tar_plan(
   
   ## Section: Input data files
   ##################################################
-  
-  # The red wine data file
-  tar_file(red_wine_file,
-           here::here("data", "winequality-red.csv")),
-  
   # The white wine data file
   tar_file(white_wine_file,
            here::here("data", "winequality-white.csv")),
@@ -23,16 +18,15 @@ tar_plan(
   ##################################################
   
   # Tibble of the red wine data
-  tar_target(all_wine_data,
-             clean_data(red_wine_file, white_wine_file)),
+  tar_target(wine_data,
+             clean_data(white_wine_file)),
   
   # The full column names from the original data
   tar_target(long_variable_names,
-             read_delim(red_wine_file, delim = ";") %>% 
+             read_delim(white_wine_file, delim = ";") %>% 
                colnames() %>% 
                str_to_title() %>%
-               str_replace("Ph","pH") %>% 
-               append("Wine Type")),
+               str_replace("Ph","pH")),
   
   
   ## Section: Exploratory data analysis
@@ -40,7 +34,10 @@ tar_plan(
   
   # Summary tables of the data
   tar_target(eda_summary_tables,
-             make_eda_summary_tables(all_wine_data)),
+             make_eda_summary_tables(wine_data)),
+  
+  tar_target(eda_summary_plots, 
+             make_eda_summary_plots(wine_data))
 
   
   ## Section: Writeup
