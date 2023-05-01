@@ -17,19 +17,19 @@ source(here::here("packages.R"))
 ```
 
 ```{r load-targets, include=FALSE}
-tar_load(c(wine_data, eda_summary_plots))
+tar_load(c(red_white_compare, eda_summary_plots))
 ```
 
 # Introduction
-The data I have chosen to analyze for this project is the [wine quality](https://archive.ics.uci.edu/ml/datasets/Wine+Quality) data from the [UCI Machine learning data repository](https://archive.ics.uci.edu/ml/index.php). The data consist of eleven variables which measure phyical properties of wine, and one response variable (quality) which is a value between 0 and 10 that is assigned by wine tasting professionals. There are two tables in the dataset, one for red wine and one for white wine. Both tables have the same set of variables. For this project, I will only use data from the white wine table. My goal for this project will be to build a predictive model to classify the wines based on their physical properties. I will build and compare multiple classification models using relevant model performance metrics and present my final predictive model based on those metrics.
+The data I have chosen to analyze for this project is the [wine quality](https://archive.ics.uci.edu/ml/datasets/Wine+Quality) data from the [UCI Machine learning data repository](https://archive.ics.uci.edu/ml/index.php). The data consist of eleven variables which measure phyical properties of wine, and one response variable (quality) which is a value between 0 and 10 that is assigned by wine tasting professionals. There are two tables in the dataset, one for red wine and one for white wine. Both tables have the same set of variables. My goal for this project will be to classify the wines in the data as either red or white using the variables of the data that measure the physical properties of each wine.  
 
 # Methods
 ## Data description
-The [wine quality](https://archive.ics.uci.edu/ml/datasets/Wine+Quality) data from the UCI machine learning repository consists of two tables: One for red wine, and one for white wine. Each table has the same eleven measurement variables, and one response variable. The eleven measurement variables measure physical properties of the wine, and the quality response variable is a quality score assigned to a particular wine by a wine tasting professional. Quality is measured from 0 to 10 with 0 indicating a very poor quality, and 10 indicating a very good quality. This score represents the median of at least three taste scores for each wine. The first five rows of the data is given below in Table 1
+The [wine quality](https://archive.ics.uci.edu/ml/datasets/Wine+Quality) data from the UCI machine learning repository consists of two tables: One for red wine, and one for white wine. Each table has the same eleven variables that measure various physical properties of the wine, and one quality variable that was assigned to each wine by a wine tasting professional. For the purposes of this analysis I will remove the quality score variable as it does not measure a physical property of the wine and instead seek to classify each wine as either red or white based on their physical qualities. 
 
 ```{r red_wine_table, echo = FALSE}
 
-wine_head <- wine_data %>% 
+wine_head <- red_white_compare%>% 
   head() 
 
 kable(wine_head, format = "latex", caption = "First five rows of the wine data set") %>% 
@@ -41,22 +41,25 @@ I'll start with some numeric summaries of the variables in the data (Table 2).
 
 ```{r variable_summaries, echo = FALSE}
 
-wine_summary <- psych::describe(wine_data)
+wine_summary <- psych::describeBy(wine_data, group = "wine_type")
 
-kable(wine_summary, caption = "Variable summary statistics for white wine data", digits = 3, format = "latex") %>% 
+kable(wine_summary$white, caption = "Variable summary statistics for white wine data", digits = 3, format = "latex") %>% 
+  kable_styling(latex_options=c("hold_position", "scale_down"))
+
+kable(wine_summary$red, caption = "Variable summary statistics for red wine data", digits = 3, format = "latex") %>% 
   kable_styling(latex_options=c("hold_position", "scale_down"))
 
 ```
 
-I can make a few general statements by looking at this data. First, we can see that all variables are complete as all have the same number of observations as I have rows in my data. The next summary statistic that jumps out are the large values for skewness and kurtosis for many of the variables. These large values suggest a departure from normality for these variables, and therefore a departure from multivariate normality for the data sets as a whole. We also can see that there is a good deal of variability in both the mean and standard deviations of the variables. This is made more obvious by looking at the distributions of the variables in the following pairs plot (Figure 1).
+I can make a few general statements by looking at this data. First, we can see that all variables are complete as all have the same number of observations as I have rows in my data. I can also see that there are far more white wines than red. The next summary statistic that jumps out are the large values for skewness and kurtosis for many of the variables. These large values suggest a departure from normality for these variables, and therefore a departure from multivariate normality for the data sets as a whole. We also can see that there is a good deal of variability in both the mean and standard deviations of the variables. This is made more obvious by looking at the distributions of the variables in the following pairs plot (Figure 1).
 
-```{r pairs_plot, echo = FALSE, message = FALSE, fig.cap = "White wine pairs plot", fig.height = 10, fig.width = 10}
+```{r pairs_plot, echo = FALSE, message = FALSE, fig.cap = "Wine pairs plot", fig.height = 10, fig.width = 10}
 
 eda_summary_plots$pairs_plot
 
 ```
 \newpage
-Finally, lets look at the distribution of the response variable, quality.  
+Finally, lets look at the distribution of the classification variable.  
 
 
 ```{r responnse_bar, echo = FALSE, fig.cap = "Count of quality scores", fig.height = 3}
@@ -64,8 +67,38 @@ eda_summary_plots$response_dist
 
 ```
 
-We can see that there is a good deal of imbalance between the classes of the quality variable. Few wines have either extremely poor, or extremely good quality scores. 
+We can see that there is a good deal of imbalance between the classes of the wine_type variable with there being far more white wines than red wines in the data set. 
 
 ## Building a model
+### General workflow
+I used packages from the [tidymodels](https://www.tidymodels.org/) suite of R packages for this project. I broke the general steps of my analysis down to match the framework used by this suite of packages, but in general, these steps align well with the process we used in class to fit our classification models. 
+
+My workflow for this project can be broken down into a sequence of general steps. After exploring my data through the numerical and visual summaries above, I considered what models I wanted to fit to my data, and what assumptions each model had of my data. This dictated what (if any) transformations I would have to do to my data prior to fitting the models. Then, I split my data into training and testing sets with a 80/20 training/testing proportional split of my data. I then split the training data further into 10 "folds" for v-fold cross validation. Each of these splits was done with stratified random sampling where the response variable, wine_type, was used to decide the strata. The [rsample](https://rsample.tidymodels.org/) package was used to do this splitting. I then wrote procedures for creating any necessary transformations to my data with the [recipes](https://recipes.tidymodels.org/) package from tidymodels, specified the models I wanted to run with the [parsnip](https://parsnip.tidymodels.org/) package, tuned my model hyperparameters with the [tune](https://tune.tidymodels.org/) and [finetune](https://finetune.tidymodels.org/) packages, and estimated the performance of my models using metrics from the [yardstick](https://finetune.tidymodels.org/) package.
+
+### Models to fit
+We discussed many different classification models in class. I want to fit several models and compare their performance. In general, I want to fit models for k-nearset neighbors (KNN), LDA/QDA, logistic regression, support vector machines (SVM), and classification trees. Broadly, these models differ in their assumptions of the predictor data, and in their hyperpamaters which will have to be tuned.
+
+#### Model assumptions
+KNN, LDA, QDA, and SVMs all require 
+
 ### Data transformations
-I know from exploring my data that there are several skewed variables in my data. One way to resolve this skew is to transform the skewed variables to be approximately normal. A log transformation can be used, but I used the slightly more complicated Box-Cox transformation for my data
+I know from exploring my data that there are several skewed variables in my data. One way to resolve this skew is to transform the skewed variables to be approximately normal. This is not necessary for all classification models, but linear discriminant analysis and quadratic discriminate analysis, (LDA and QDA, respectively), can suffer from predictors that deviate from multivariate normality (MVN). Furthermore, dimensional reduction via principle component analysis (PCA) requires that predictors be centered and scaled. 
+
+
+### Metrics for evaluating model performance
+
+
+### Hyperparamater tuning procedures
+The decision tree, KNN, and SVM models all have hyperparameters that can be tuned to potentially improve model performance. This can be accomplished in many ways under the tidymodels framework but I utilized a combination of 10-fold cross validation to estimate model performance, and a grid search to define the parameter combinations I wanted to test for each model. 
+
+
+
+
+
+### Limitations of the current analysis
+I noted earlier that there are very few observations in the extreme classes of this data. In particular, there are very few wines that are classified as a 3 or a 9 which represented the most extreme values for the quality score. This caused some problems that arose after splitting the data into folds where even with stratified sampling, some folds would not have observations in them from these extreme categories and they would have to be dropped from the factor when fitting the model. Merging some of the levels of this quality score could fix this issue by creating classes with more observations but would also introduce bias into the quality categories.  
+
+I framed the analysis of this data as a classification problem, but this introduces some issues. It is debatable if the ordinal quality score response for this data is truly a classification problem, or if it would be better represented as a regression problem. Personally, I find it reasonable to frame it as a classification problem because I was unsure what an increase of 1 in quality of a wine really represents numerically. The quality score seemed to me as less of a truly numeric representation of the merit of the wine, and more of a convenient system to provide bins to sort the wines into. Nonetheless, one issue I can see is that there is an obvious ordnial nature to this data that these methods ignore. A model should definitely be penalized more heavily for classifying a wine with a quality score of 3 as a 9 than it would for classifying one with a score of 8 as a 9. In this context, it makes more sense to frame the question as regression rather than classification as it is easier to adapt error metrics to the ordinal nature of the factor that more accurately represent the severity of misclassifying very dissimilar categories. 
+
+
+

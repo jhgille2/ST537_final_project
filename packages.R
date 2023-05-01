@@ -27,10 +27,24 @@ pacman::p_load(ggplot2,
                GGally)
 
 # Modeling
-pacman::p_load(tidymodels,
-               descrim)
+pacman::p_load(rsample,
+               yardstick,
+               recipes,
+               discrim,
+               tune,
+               finetune,
+               bestNormalize,
+               multilevelmod,
+               workflows,
+               workflowsets,
+               dials,
+               tidymodels)
 
 # writeup
 pacman::p_load(kableExtra,
                rmdformats,
                rmarkdown)
+
+tidymodels_prefer()
+conflicts_prefer(scales::alpha)
+

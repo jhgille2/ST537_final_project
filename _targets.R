@@ -12,6 +12,10 @@ tar_plan(
   # The white wine data file
   tar_file(white_wine_file,
            here::here("data", "winequality-white.csv")),
+  
+  # The red wine data file
+  tar_file(red_wine_file, 
+           here::here("data", "winequality-red.csv")),
 
   
   ## Section: Reading in data
@@ -20,6 +24,9 @@ tar_plan(
   # Tibble of the red wine data
   tar_target(wine_data,
              clean_data(white_wine_file)),
+  
+  tar_target(red_white_compare,
+             merge_wine_data(red_wine_file, white_wine_file)),
   
   # The full column names from the original data
   tar_target(long_variable_names,
@@ -37,7 +44,7 @@ tar_plan(
              make_eda_summary_tables(wine_data)),
   
   tar_target(eda_summary_plots, 
-             make_eda_summary_plots(wine_data))
+             make_eda_summary_plots(wine_data)),
 
   
   ## Section: Writeup
